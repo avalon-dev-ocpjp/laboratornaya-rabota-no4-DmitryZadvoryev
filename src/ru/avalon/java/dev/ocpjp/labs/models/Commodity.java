@@ -5,6 +5,9 @@ import ru.avalon.java.dev.ocpjp.labs.core.io.RandomFileReader;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Абстрактное представление о товаре.
@@ -50,6 +53,7 @@ public interface Commodity {
      * проектирования "Строитель" для типа данных {@link Commodity}.
      */
     interface CommodityBuilder extends Builder<Commodity> {
+
         /**
          * Устанавливает код товара.
          *
@@ -102,25 +106,6 @@ public interface Commodity {
     }
 
     /**
-     * Возвращает "Строитель", с использованием которого
-     * можно создавать экземпляры типа {@link Commodity}.
-     *
-     * @return экземпляр типа {@link CommodityBuilder}
-     */
-    static CommodityBuilder builder() {
-        /*
-         * TODO(Студент): Реализовать метод 'builder()' типа 'Commodity'
-         * В рамках задачи потребуется создать реализацию
-         * интерфейса CommodityBuilder, что в свою очередь
-         * потребует создания реализации для интерфейса Commodity.
-         *
-         * Созданные реализации случше всего инкапсулировать
-         * на уровне пакета.
-         */
-        throw new UnsupportedOperationException("Not implemented yet!");
-    }
-
-    /**
      * Выполняет создание заданного количества случайных
      * товаров.
      *
@@ -131,28 +116,35 @@ public interface Commodity {
      */
     static Collection<Commodity> random(int limit) throws IOException {
         try (RandomFileReader reader = RandomFileReader.fromSystemResource("resources/household.csv")) {
-            /*
-             * TODO(Студент): Реализовать создание случайных объектов типа 'Commodity'
-             * 1. Для создания коллекции следует использовать метод 'generate()' класса 'Stream'
-             * 2. Для получения коллекции следует использовать метод 'collect()' класса 'Stream'
-             */
-            throw new UnsupportedOperationException("Not implemented yet!");
+
+               return Stream.generate(reader::readLine).limit(limit).map(x->valueOf(x)).collect(Collectors.toList());
         }
     }
 
     /**
-     * Выполняет создание экземпляра типа {@link Commodity}
-     * из строки.
+     * Возвращает "Строитель", с использованием которого
+     * можно создавать экземпляры типа {@link Commodity}.
      *
-     * @param string строка, содержащая данные о товаре
-     * @return экземпляр типа {@link Commodity}
+     * @return экземпляр типа {@link CommodityBuilder}
      */
-    static Commodity valueOf(String string) {
-        /*
-         * TODO(Студент): реализовать метод 'parse()' класса 'Commodity'
-         * Реализация метода должна быть основана на формате
-         * файла 'resources/household.csv'.
-         */
-        throw new UnsupportedOperationException("Not implemented yet!");
+
+    static CommodityBuilder builder() {
+        return new CommodityImpl.CommodityBuilderImpl();
+
     }
-}
+        /**
+         * Выполняет создание экземпляра типа {@link Commodity}
+         * из строки.
+         *
+         * @param string строка, содержащая данные о товаре
+         * @return экземпляр типа {@link Commodity}
+         */
+        static Commodity valueOf (String string){
+
+            List<String> section = Stream.of(string.split(";")).collect(Collectors.toList());
+
+            return Commodity.builder().code(section.get(0)).vendorCode(section.get(1)).name(section.get(2)).residue(Integer.parseInt(section.get(3))).price(Double.parseDouble(section.get(4))).build();
+
+        }
+
+    }
